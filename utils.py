@@ -48,7 +48,8 @@ def plot_log_log_summary(records,B=20,summary=np.median, discrete=False):
             median_ys += [current_y]
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
             err += [np.std(current_ys)]
-        plt.errorbar(binned_xs[1:], median_ys, marker='o', yerr=err,color='r')
+        plt.errorbar((binned_xs[-1:]+binned_xs[1:])/2, median_ys, marker='o', yerr=err,color='r')
+        print("Hi")
     else:
         binned_xs = np.unique(xs)
         median_ys = []
