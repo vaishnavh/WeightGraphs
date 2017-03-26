@@ -286,3 +286,5 @@ def ewpl(G):
         score = (G.degree(e[0],weight='weight')-wt)*(G.degree(e[1],weight='weight')-wt)
         pwl += [(wt, score)]
     return np.asarray(pwl)
+
+
