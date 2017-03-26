@@ -140,7 +140,7 @@ def bad_sim_score_1(G):
         pwl += [(wt, sim)]
     return np.asarray(pwl)
 
-def sim_score_1(G):
+def mutual(G):
     pwl = []
     for e in tqdm(G.edges()):
         wt = G[e[0]][e[1]]['weight']
@@ -154,7 +154,7 @@ def sim_score_1(G):
         #    [1/np.log(len(oregon_G.neighbors(v))) for v in all_nbrs])
         #sim = sum([1/float(G.degree(v)) for v in common_nbrs])
         #sim = float(len(set.union(nbr1,nbr2)))*pow(len(set.intersection(nbr1,nbr2)),0.1)
-        sim = len(set.intersection(nbr1,nbr2))/float(len(set.union(nbr1,nbr2)))
+        sim = len(set.intersection(nbr1,nbr2)) #/float(len(set.union(nbr1,nbr2)))
         #sim = 1.0/float(len(set.union(nbr1,nbr2)))
 
         #sim = float(len(set.union(nbr1,nbr2)))
@@ -163,7 +163,7 @@ def sim_score_1(G):
     return np.asarray(pwl)
 
 
-def sim_score_edge_weight(G):
+def mutual_ew(G):
     pwl = []
     for e in tqdm(G.edges()):
         wt = G[e[0]][e[1]]['weight']#/float(G.degree(e[0],weight='weight')+G.degree(e[1],weight='weight'))
@@ -182,19 +182,59 @@ def sim_score_edge_weight(G):
     return np.asarray(pwl)    
 
 
-def sim_score_2(G):
+def adamic_acar(G):
     pwl = []
     for e in tqdm(G.edges()):
-        wt = G[e[0]][e[1]]['weight']/float(G.degree(e[0],weight='weight')+G.degree(e[1],weight='weight'))
+        wt = G[e[0]][e[1]]['weight'] #/float(G.degree(e[0],weight='weight')+G.degree(e[1],weight='weight'))
         nbr1 = set(G.neighbors(e[0]))
         nbr2 = set(G.neighbors(e[1]))
         common_nbrs= set.intersection(nbr1,nbr2)
         all_nbrs = set.union(nbr1,nbr2)
-        sim = sum([1/np.log(len(G.neighbors(v))+1) for v in common_nbrs])/sum([1/np.log(len(G.neighbors(v))+1) for v in all_nbrs])
+        sim = sum([1/np.log(len(G.neighbors(v))+1) for v in common_nbrs]) #/sum([1/np.log(len(G.neighbors(v))+1) for v in all_nbrs])
         #sim = len(set.intersection(nbr1,nbr2))/float(len(set.union(nbr1,nbr2)))
         #sim = len(set.intersection(nbr1,nbr2))
         pwl += [(wt, sim)]
     return np.asarray(pwl)
+
+def adamic_acar_ew(G):
+    pwl = []
+    for e in tqdm(G.edges()):
+        wt = G[e[0]][e[1]]['weight']#/float(G.degree(e[0],weight='weight')+G.degree(e[1],weight='weight'))
+        nbr1 = set(G.neighbors(e[0]))
+        nbr2 = set(G.neighbors(e[1]))
+        common_nbrs= set.intersection(nbr1,nbr2)
+        #common_nbrs_wt = (sum([G[e[0]][nbr]['weight']*G[nbr][e[1]]['weight'] for nbr in common_nbrs]))
+        #all_nbrs = set.union(nbr1,nbr2)
+        #sim = sum([1/np.log(len(oregon_G.neighbors(v))) for v in common_nbrs])/sum(
+        #    [1/np.log(len(oregon_G.neighbors(v))) for v in all_nbrs])
+        sim = sum([1/np.log(G.degree(v,weight='weight')+1) for v in common_nbrs])
+        #sim = common_nbrs_wt#/float((G.degree(e[0],weight='weight')-wt+1)*(G.degree(e[1],weight='weight')-wt+1))
+        #sim = float((G.degree(e[0],weight='weight')-wt+1)*(G.degree(e[1],weight='weight')-wt+1))
+        #sim = len(set.intersection(nbr1,nbr2))/float(len(set.union(nbr1,nbr2)))
+        #sim = len(set.intersection(nbr1,nbr2))
+        pwl += [(wt, sim)]
+    return np.asarray(pwl)    
+
+
+def adamic_acar_ew_2(G):
+    pwl = []
+    for e in tqdm(G.edges()):
+        wt = G[e[0]][e[1]]['weight']#/float(G.degree(e[0],weight='weight')+G.degree(e[1],weight='weight'))
+        nbr1 = set(G.neighbors(e[0]))
+        nbr2 = set(G.neighbors(e[1]))
+        common_nbrs= set.intersection(nbr1,nbr2)
+        #common_nbrs_wt = (sum([G[e[0]][nbr]['weight']*G[nbr][e[1]]['weight'] for nbr in common_nbrs]))
+        #all_nbrs = set.union(nbr1,nbr2)
+        #sim = sum([1/np.log(len(oregon_G.neighbors(v))) for v in common_nbrs])/sum(
+        #    [1/np.log(len(oregon_G.neighbors(v))) for v in all_nbrs])
+        sim = sum([G[e[0]][nbr]['weight']*G[nbr][e[1]]['weight']/np.log(G.degree(nbr)+1) for nbr in common_nbrs])
+        #sim = common_nbrs_wt#/float((G.degree(e[0],weight='weight')-wt+1)*(G.degree(e[1],weight='weight')-wt+1))
+        #sim = float((G.degree(e[0],weight='weight')-wt+1)*(G.degree(e[1],weight='weight')-wt+1))
+        #sim = len(set.intersection(nbr1,nbr2))/float(len(set.union(nbr1,nbr2)))
+        #sim = len(set.intersection(nbr1,nbr2))
+        pwl += [(wt, sim)]
+    return np.asarray(pwl)    
+
 
 
 def self_similarity(G, distances,size=1000, weight=None):
