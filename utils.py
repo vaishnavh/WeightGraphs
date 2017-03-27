@@ -28,7 +28,7 @@ def plot(records):
     # Todo add median code
     
     
-def plot_log_log_summary(records,xlabel,ylabel,B=20,summary=np.median,discrete=False):
+def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=False):
     fig, ax = plt.subplots()
 
     # Selecting only positive values
@@ -40,12 +40,12 @@ def plot_log_log_summary(records,xlabel,ylabel,B=20,summary=np.median,discrete=F
     if discrete==False:
         x_max = max(xs) - min(xs)
         # bin into default 20 values
-        binned_xs = [min(xs)+(x_max*i)/float(B) for i in range(B+2)]
+        binned_xs = [min(xs)+(x_max*i)/float(B) for i in range(B+1)]
         median_ys = []
         err = []
-        for i in range(B+1):
+        for i in range(B):
             # find median y values for x values in [binned_xs[i], binned_xs[i+1])
-            current_ys = [ys[j] for j in range(len(xs)) if binned_xs[i] <= xs[j] and xs[j] < binned_xs[i+1]]
+            current_ys = [ys[j] for j in range(len(xs)) if binned_xs[i] <= xs[j] and xs[j] <= binned_xs[i+1]]
             current_y = summary(current_ys)
             median_ys += [current_y]
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
@@ -148,8 +148,8 @@ def read_graph(filename):
             G[e[0]][e[1]]['weight']+=1
         else:
             G.add_edge(e[0],e[1],weight=1)
-    G[e[0]][e[1]]['weight_inv']=1/float(G[e[0]][e[1]]['weight'])
-    G[e[0]][e[1]]['weight_inv_exp']=np.exp(-float(G[e[0]][e[1]]['weight'])/3.0)
+        G[e[0]][e[1]]['weight_inv']=1/float(G[e[0]][e[1]]['weight'])
+        G[e[0]][e[1]]['weight_inv_exp']=np.exp(-float(G[e[0]][e[1]]['weight'])/3.0)
     return G    
 
 def bad_sim_score_1(G):
@@ -269,7 +269,7 @@ def self_similarity(G, distances,size=1000, weight=None):
     if weight == None:
         for node in tqdm(np.random.choice(G.nodes(),size=size)):
             for d in distances:
-                pwl += [(d,len(nx.single_source_dijkstra_path_length(G,node,cutoff=d)))]        
+                pwl += [(d,len(nx.single_source_dijkstra_path_length(G,node,cutoff=d,weight=None)))]        
     else:
         for node in tqdm(np.random.choice(G.nodes(),size=size)):
             for d in distances:
