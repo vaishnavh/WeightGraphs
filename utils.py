@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 from scipy import sparse,  io, linalg
+import scipy.stats as st
 import pickle
 from tqdm import tqdm_notebook as tqdm
 import networkx as nx
@@ -48,8 +49,10 @@ def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=Fa
             current_ys = [ys[j] for j in range(len(xs)) if binned_xs[i] <= xs[j] and xs[j] <= binned_xs[i+1]]
             current_y = summary(current_ys)
             median_ys += [current_y]
+            mean, sigma = np.mean(current_ys), np.std(current_ys)
+            interval = st.t.interval(0.95, len(current_ys)-1, loc=mean, scale=sigma/np.sqrt(len(current_ys)))
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
-            err += [np.std(current_ys)]
+            err += [interval[1]-interval[0]]
         plt.errorbar((np.asarray(binned_xs[:-1])+np.asarray(binned_xs[1:]))/2.0, median_ys, marker='o', yerr=err,color='r')
         m, c= np.polyfit((np.asarray(binned_xs[:-1])+np.asarray(binned_xs[1:]))/2.0, median_ys,1)
     else:
@@ -59,9 +62,9 @@ def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=Fa
         for x in binned_xs:
             current_ys = [ys[j] for j in range(len(xs)) if xs[j] == x]
             current_y = summary(current_ys)
-            median_ys += [current_y]
+            interval = st.t.interval(0.95, len(current_ys)-1, loc=mean, scale=sigma/np.sqrt(len(current_ys)))
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
-            err += [np.std(current_ys)]
+            err += [interval[1]-interval[0]]
         plt.errorbar(binned_xs, median_ys, marker='o', yerr=err,color='r')
         m,c=(np.polyfit(binned_xs, median_ys, 1))
     ax.set_xlabel(xlabel+':  Slope='+str(m))
