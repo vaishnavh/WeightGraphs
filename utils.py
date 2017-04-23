@@ -37,6 +37,8 @@ def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=Fa
     xs = [np.log(record[0]) for record in records]
     ys = [np.log(record[1]) for record in records]
     plt.scatter([(x) for x in xs], [(y) for y in  ys],s=0.5)
+    #corr=0
+    corr=np.corrcoef(xs,ys)[0][1]
     m=0
     if discrete==False:
         x_max = max(xs) - min(xs)
@@ -53,6 +55,7 @@ def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=Fa
             interval = st.t.interval(0.95, len(current_ys)-1, loc=mean, scale=sigma/np.sqrt(len(current_ys)))
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
             err += [interval[1]-interval[0]]
+
         plt.errorbar((np.asarray(binned_xs[:-1])+np.asarray(binned_xs[1:]))/2.0, median_ys, marker='o', yerr=err,color='r')
         m, c= np.polyfit((np.asarray(binned_xs[:-1])+np.asarray(binned_xs[1:]))/2.0, median_ys,1)
     else:
@@ -62,13 +65,22 @@ def plot_log_log_summary(records,xlabel,ylabel,B=6,summary=np.median,discrete=Fa
         for x in binned_xs:
             current_ys = [ys[j] for j in range(len(xs)) if xs[j] == x]
             current_y = summary(current_ys)
+            median_ys += [current_y]
+            mean, sigma = np.mean(current_ys), np.std(current_ys)
             interval = st.t.interval(0.95, len(current_ys)-1, loc=mean, scale=sigma/np.sqrt(len(current_ys)))
             #err += [[median_ys-np.std(current_ys)*0.5,median_ys+np.std(current_ys)*0.5]]
             err += [interval[1]-interval[0]]
         plt.errorbar(binned_xs, median_ys, marker='o', yerr=err,color='r')
         m,c=(np.polyfit(binned_xs, median_ys, 1))
-    ax.set_xlabel(xlabel+':  Slope='+str(m))
-    ax.set_ylabel(ylabel)
+
+    plt.rc('xtick', labelsize=15) 
+    plt.rc('ytick', labelsize=15) 
+    plt.rcParams.update({'font.size': 15})
+    m = round(m,3)
+    corr = round(corr,3)
+    plt.xlabel(xlabel+': Slope='+str(m)+', Corr='+str(corr))
+    #plt.figtext('Slope='+str(m)+'\n Corr='+str(corr),loc='best')
+    plt.ylabel(ylabel)
 
 def plot_summary(records,xlabel,ylabel,B=20,summary=np.median,discrete=False):
     fig, ax = plt.subplots()
@@ -116,8 +128,9 @@ def read_all_graphs(dir,directed=False):
                     G[e[0]][e[1]]['weight']+=1
                 else:
                     G.add_edge(e[0],e[1],weight=1)
-                G[e[0]][e[1]]['weight_inv']=1/float(G[e[0]][e[1]]['weight'])
-                G[e[0]][e[1]]['weight_inv_exp']=np.exp(-float(G[e[0]][e[1]]['weight'])/3.0)
+        for e in G.edges_iter():
+            G[e[0]][e[1]]['weight_inv']=1/float(G[e[0]][e[1]]['weight'])
+            G[e[0]][e[1]]['weight_inv_exp']=np.exp(-float(G[e[0]][e[1]]['weight'])/3.0)
         return G
     else:
         diG=nx.DiGraph()
@@ -151,6 +164,7 @@ def read_graph(filename):
             G[e[0]][e[1]]['weight']+=1
         else:
             G.add_edge(e[0],e[1],weight=1)
+    for e in G.edges_iter():
         G[e[0]][e[1]]['weight_inv']=1/float(G[e[0]][e[1]]['weight'])
         G[e[0]][e[1]]['weight_inv_exp']=np.exp(-float(G[e[0]][e[1]]['weight'])/3.0)
     return G    
